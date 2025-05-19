@@ -38,6 +38,12 @@
 static i2s_chan_handle_t                tx_chan;        // I2S tx channel handler
 static i2s_chan_handle_t                rx_chan;        // I2S rx channel handler
 
+uint32_t t = 0;
+void vApplicationTickHook(void)
+{
+    ++t;
+}
+
 static void toggle_led(void *args)
 {
     gpio_set_direction(LED_PIN, GPIO_MODE_OUTPUT);
@@ -46,6 +52,7 @@ static void toggle_led(void *args)
         vTaskDelay(pdMS_TO_TICKS(1000));
         gpio_set_level(LED_PIN, 0);
         vTaskDelay(pdMS_TO_TICKS(1000));
+        printf("time: %ld\n", t);
     }
     vTaskDelete(NULL);
 }
