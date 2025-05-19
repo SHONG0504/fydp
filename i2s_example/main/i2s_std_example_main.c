@@ -31,10 +31,24 @@
 #define EXAMPLE_STD_DIN_IO2         EXAMPLE_I2S_DIN_IO2     // I2S data in io number
 #endif
 
+#define LED_PIN GPIO_NUM_2
+
 #define EXAMPLE_BUFF_SIZE               2048
 
 static i2s_chan_handle_t                tx_chan;        // I2S tx channel handler
 static i2s_chan_handle_t                rx_chan;        // I2S rx channel handler
+
+static void toggle_led(void *args)
+{
+    gpio_set_direction(LED_PIN, GPIO_MODE_OUTPUT);
+    while (1) {
+        gpio_set_level(LED_PIN, 1);
+        vTaskDelay(pdMS_TO_TICKS(1000));
+        gpio_set_level(LED_PIN, 0);
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
+    vTaskDelete(NULL);
+}
 
 static void i2s_example_read_task(void *args)
 {
@@ -117,8 +131,9 @@ static void i2s_example_init_std_duplex(void)
      * These two helper macros is defined in 'i2s_std.h' which can only be used in STD mode.
      * They can help to specify the slot and clock configurations for initialization or re-configuring */
     i2s_std_config_t std_cfg = {
-        .clk_cfg  = I2S_STD_CLK_DEFAULT_CONFIG(16000),
-        .slot_cfg = I2S_STD_MSB_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_32BIT, I2S_SLOT_MODE_STEREO),
+        .clk_cfg  = I2S_STD_CLK_DEFAULT_CONFIG(44100),
+        // .slot_cfg = I2S_STD_MSB_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_32BIT, I2S_SLOT_MODE_STEREO),
+        .slot_cfg = I2S_STD_MSB_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_32BIT, I2S_SLOT_MODE_MONO),
         .gpio_cfg = {
             .mclk = I2S_GPIO_UNUSED,    // some codecs may require mclk signal, this example doesn't need it
             .bclk = EXAMPLE_STD_BCLK_IO1,
@@ -205,6 +220,7 @@ void app_main(void)
 #endif
 
     /* Step 3: Create writing and reading task, enable and start the channels */
+    xTaskCreate(toggle_led, "toggle_led", 4096, NULL, 5, NULL);
     xTaskCreate(i2s_example_read_task, "i2s_example_read_task", 4096, NULL, 5, NULL);
     xTaskCreate(i2s_example_write_task, "i2s_example_write_task", 4096, NULL, 5, NULL);
 }
