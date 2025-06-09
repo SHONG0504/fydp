@@ -1,0 +1,4 @@
+v0.1.0
+- Modified FreeRTOS freq to 1000Hz from 1000Hz
+- Increased WDT to 1500ms from 300ms to prevent WDT trigger after modifying RTOS tick
+- Created skeleton for I2S write task
